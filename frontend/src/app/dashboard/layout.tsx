@@ -7,24 +7,24 @@ import { TaskProvider } from "@/context/TaskContext";
 import Header from "@/components/Header";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
-  const { user, refresh } = useAuth();
+  const { user, refresh, loading } = useAuth();
   const router = useRouter();
 
-  //   useLayoutEffect(() => {
-  //     const checkAuth = async () => {
-  //       if (!user) {
-  //         await refresh(); // Attempt to refresh token and get user
-  //       }
-  //     };
+  useLayoutEffect(() => {
+    const checkAuth = async () => {
+      if (!user) {
+        await refresh(); // Attempt to refresh token and get user
+      }
+    };
 
-  //     checkAuth();
-  //   }, [user, refresh]);
+    loading != "loading" && checkAuth();
+  }, [user, refresh, loading]);
 
-  //   useLayoutEffect(() => {
-  //     if (!user) {
-  //       router.push("/auth/login"); // Redirect to login if not authenticated
-  //     }
-  //   }, [user, router]);
+  useLayoutEffect(() => {
+    if (loading != "loading" && !user) {
+      router.push("/auth/login"); // Redirect to login if not authenticated
+    }
+  }, [user, router, loading]);
 
   return (
     <TaskProvider>

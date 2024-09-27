@@ -1,9 +1,8 @@
 export interface Task extends Document {
     _id: string;
     tid: string;
-    title: string;
     pos?: number;
+    title: string;
     status: "To Do" | "In Progress" | "Completed";
     createdAt: Date;
-    userId: string
   }

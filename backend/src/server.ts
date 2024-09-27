@@ -25,10 +25,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 //auth router
-app.use("/auth", authRouter);
+app.use("/api", authRouter);
 
 //task router
-app.use("/task", taskRouter);
+app.use("/api", taskRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server");

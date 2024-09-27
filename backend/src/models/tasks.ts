@@ -1,23 +1,19 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document } from "mongoose";
+import { Task } from "types/task";
 
-interface Task extends Document {
-  title: string;
-  description: string;
-  completed: boolean;
-  userId: string; // Add userId field to associate with a user
-  createdAt: Date;
-  updatedAt: Date;
-}
+const taskSchema = new Schema(
+  {
+    tid: { type: String, required: true },
+    title: { type: String, required: true },
+    status: { type: String, required: true, default: "To Do" },
+    pos: { type: Number },
+    userId: { type: Schema.Types.ObjectId, required: true }, // Define userId field
+  },
+  {
+    timestamps: true, // Automatically manage createdAt and updatedAt fields
+  }
+);
 
-const taskSchema = new Schema<Task>({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  completed: { type: Boolean, default: false },
-  userId: { type: String, required: true }, // Define userId field
-}, {
-  timestamps: true, // Automatically manage createdAt and updatedAt fields
-});
-
-const taskModel = model<Task>('Task', taskSchema);
+const taskModel = model<Task>("Task", taskSchema);
 
 export default taskModel;

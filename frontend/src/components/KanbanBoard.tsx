@@ -25,30 +25,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"; // Updated imports for Select
 import { Input } from "@/components/ui/input"; // Assuming you have an Input component
-
-interface Task {
-  id: string;
-  title: string;
-}
-
-interface Tasks {
-  [key: string]: { name: string; data: Task[] };
-}
-
-const initialTasks: Tasks = {
-  "to-do": {
-    name: "To Do",
-    data: [
-      { id: "1", title: "Task 1" },
-      { id: "2", title: "Task 2" },
-    ],
-  },
-  "in-progress": { name: "In Progress", data: [{ id: "3", title: "Task 3" }] },
-  completed: { name: "Completed", data: [{ id: "4", title: "Task 4" }] },
-};
+import { useTaskContext } from "../context/TaskContext"; // Import the task context
 
 const KanbanBoard = () => {
-  const [tasks, setTasks] = useState<Tasks>(initialTasks);
+  const { tasks, addTask, updateTask } = useTaskContext(); // Access tasks and context functions
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("to-do");
@@ -57,35 +37,20 @@ const KanbanBoard = () => {
     if (!result.destination) return;
 
     const sourceColumn = result.source.droppableId;
+    const sourceIndex = result.source.index;
     const destColumn = result.destination.droppableId;
-    const sourceTasks = [...tasks[sourceColumn].data];
-    const [removed] = sourceTasks.splice(result.source.index, 1);
+    const destIndex = result.destination.index;
 
-    if (sourceColumn === destColumn) {
-      sourceTasks.splice(result.destination.index, 0, removed);
-      setTasks((prev) => ({
-        ...prev,
-        [sourceColumn]: { name: tasks[sourceColumn].name, data: sourceTasks },
-      }));
-    } else {
-      const destTasks = [...tasks[destColumn].data];
-      destTasks.splice(result.destination.index, 0, removed);
-      setTasks((prev) => ({
-        ...prev,
-        [sourceColumn]: { name: tasks[sourceColumn].name, data: sourceTasks },
-        [destColumn]: { name: tasks[destColumn].name, data: destTasks },
-      }));
-    }
+    // console.log(result);
+
+    updateTask({ sourceColumn, sourceIndex, destColumn, destIndex });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim()) {
-      const newTask = { id: Date.now().toString(), title, status };
-      setTasks((prev) => ({
-        ...prev,
-        [status]: { name: tasks[status].name, data: [...prev[status].data,newTask] },
-      }));
+      const newTask: any = { tid: Date.now().toString(), title, status }; // Add user ID if needed
+      await addTask(newTask); // Use context function to add task
       setTitle("");
       setIsOpen(false);
     }
@@ -109,12 +74,12 @@ const KanbanBoard = () => {
                   className="flex flex-col w-full md:w-1/3 bg-slate-50 border border-slate-300 p-4 rounded box-border h-fit"
                 >
                   <h2 className="text-lg font-semibold mb-2">
-                    {column.replace("-", " ")}
+                    {tasks[column].name}
                   </h2>
-                  {tasks[column].data.map((task: Task, index: number) => (
+                  {tasks[column].data.map((task: any, index: number) => (
                     <Draggable
-                      key={task.id}
-                      draggableId={task.id}
+                      key={task.tid}
+                      draggableId={task.tid}
                       index={index}
                     >
                       {(provided) => (
