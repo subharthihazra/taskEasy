@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { SERVER_PORT } from "./config/env";
 import ErrorMiddleware from "./errorhandlers/ErrorMiddleware";
+import authRouter from "./routes/auth";
 import connectDB from "./db/connect";
 
 const app: Express = express();
@@ -21,6 +22,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 // parse cookie
 app.use(cookieParser());
+
+//auth router
+app.use("/auth", authRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server");
