@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { SERVER_PORT } from "./config/env";
 import ErrorMiddleware from "./errorhandlers/ErrorMiddleware";
 import authRouter from "./routes/auth";
+import taskRouter from "./routes/task";
 import connectDB from "./db/connect";
 
 const app: Express = express();
@@ -25,6 +26,9 @@ app.use(cookieParser());
 
 //auth router
 app.use("/auth", authRouter);
+
+//task router
+app.use("/task", taskRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server");

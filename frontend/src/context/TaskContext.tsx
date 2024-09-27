@@ -1,69 +1,72 @@
-"use client";
+// context/taskContext.tsx
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createTask, getTasks, updateTask, deleteTask } from '../lib/taskServices';
 
-import { createContext, useContext, useState, useEffect } from 'react';
-import apiClient from '../lib/apiClient';
-
-interface Task {
-  _id: string;
-  title: string;
-  description?: string;
-  status: 'To Do' | 'In Progress' | 'Completed';
-  priority: 'Low' | 'Medium' | 'High';
-  dueDate?: string;
+interface TaskContextType {
+  tasks: any[];
+  createNewTask: (taskData: any) => Promise<void>;
+  updateExistingTask: (taskId: any, taskData: any) => Promise<void>;
+  removeTask: (taskId: any) => Promise<void>;
 }
 
-interface TaskContextProps {
-  tasks: Task[];
-  fetchTasks: () => Promise<void>;
-  createTask: (task: Partial<Task>) => Promise<void>;
-  updateTask: (task: Task) => Promise<void>;
-  deleteTask: (taskId: string) => Promise<void>;
-}
+const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
-const TaskContext = createContext<TaskContextProps | undefined>(undefined);
-
-export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  const fetchTasks = async () => {
-    try {
-      const { data } = await apiClient.get('/tasks');
-      setTasks(data);
-    } catch (error) {
-      console.error('Failed to fetch tasks:', error);
-    }
-  };
-
-  const createTask = async (task: Partial<Task>) => {
-    const { data } = await apiClient.post('/tasks/create', task);
-    setTasks([...tasks, data]);
-  };
-
-  const updateTask = async (task: Task) => {
-    const { data } = await apiClient.put(`/tasks/${task._id}`, task);
-    setTasks(tasks.map(t => (t._id === data._id ? data : t)));
-  };
-
-  const deleteTask = async (taskId: string) => {
-    await apiClient.delete(`/tasks/${taskId}`);
-    setTasks(tasks.filter(task => task._id !== taskId));
-  };
+export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [tasks, setTasks] = useState<any[]>([]);
 
   useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const fetchedTasks = await getTasks();
+        setTasks(fetchedTasks.data);
+      } catch (error) {
+        console.error('Failed to fetch tasks:', error);
+      }
+    };
+
     fetchTasks();
   }, []);
 
+  const createNewTask = async (taskData: any) => {
+    try {
+      const newTask = await createTask(taskData);
+      setTasks((prevTasks) => [...prevTasks, newTask]);
+    } catch (error) {
+      console.error('Failed to create task:', error);
+    }
+  };
+
+  const updateExistingTask = async (taskId: any, taskData: any) => {
+    try {
+      const updatedTask = await updateTask(taskId, taskData);
+      setTasks((prevTasks) => 
+        prevTasks.map((task) => (task._id === taskId ? updatedTask : task))
+      );
+    } catch (error) {
+      console.error('Failed to update task:', error);
+    }
+  };
+
+  const removeTask = async (taskId: any) => {
+    try {
+      await deleteTask(taskId);
+      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    }
+  };
+
   return (
-    <TaskContext.Provider value={{ tasks, fetchTasks, createTask, updateTask, deleteTask }}>
+    <TaskContext.Provider value={{ tasks, createNewTask, updateExistingTask, removeTask }}>
       {children}
     </TaskContext.Provider>
   );
 };
 
-export const useTasks = () => {
+export const useTaskContext = () => {
   const context = useContext(TaskContext);
-  if (!context) {
-    throw new Error('useTasks must be used within a TaskProvider');
+  if (context === undefined) {
+    throw new Error('useTaskContext must be used within a TaskProvider');
   }
   return context;
 };
