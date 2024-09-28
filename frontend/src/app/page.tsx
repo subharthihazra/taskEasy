@@ -9,7 +9,7 @@ export default function Component() {
 
   return (
     <>
-    <Header />
+    <Header curpage="home" />
       <div className="flex items-center justify-center min-h-screen bg-background p-4">
         <div className="flex flex-col sm:flex-row gap-6">
           <Button
