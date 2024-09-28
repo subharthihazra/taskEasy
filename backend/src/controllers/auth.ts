@@ -156,8 +156,8 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
     }
 
     res.setHeader("Set-Cookie", [
-      "Authorization=; Max-age=0",
-      "refreshToken=; Max-age=0",
+      "Authorization=; Max-age=0; HttpOnly; SameSite=None;  Secure",
+      "refreshToken=; Max-age=0; HttpOnly; SameSite=None;  Secure",
     ]);
     res
       .status(200)
