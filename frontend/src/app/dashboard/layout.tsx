@@ -4,7 +4,6 @@ import { ReactNode, useEffect, useLayoutEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { TaskProvider } from "@/context/TaskContext";
-import Header from "@/components/Header";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const { user, refresh, loading } = useAuth();
@@ -28,7 +27,6 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
   return (
     <TaskProvider>
-      <Header />
       <div>{children}</div>
     </TaskProvider>
   );

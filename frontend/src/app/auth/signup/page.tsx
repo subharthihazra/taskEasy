@@ -1,19 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
+  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const SignupPage = () => {
   const { signup } = useAuth();
@@ -31,7 +33,7 @@ const SignupPage = () => {
 
     try {
       await signup(name, email, password);
-      router.push("/dashboard"); // Redirect to dashboard after sign-up
+      router.push("/dashboard/kanban");
     } catch (err) {
       setError("Sign-up failed. Please try again.");
     } finally {
@@ -40,74 +42,76 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Card className="w-full max-w-md">
+    <div className="min-h-[100vh] flex flex-col justify-center bg-[#ffebc4] bg-[linear-gradient(180deg,#ffebc4,#fd9)]">
+      <Card className="sm:w-[400px] sm:mx-auto mx-3 my-3 shadow-2xl border-[#00000055]">
         <CardHeader>
-          <CardTitle>Sign Up</CardTitle>
+          <CardTitle className="text-3xl font-bold">Signup</CardTitle>
+          <CardDescription className="text-gray-500 dark:text-gray-400">
+            Create a New Account
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Name
-                </label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e: any) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e: any) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              {error && <Alert>{error}</Alert>}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
             </div>
-
-            <CardFooter className="mt-4">
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing up..." : "Sign Up"}
-              </Button>
-            </CardFooter>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="john.doe@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="********"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {error && (
+              <div className="mt-4 text-center text-md text-red-900">
+                <Alert variant="destructive" className="border-none">
+                  {error}
+                </Alert>
+              </div>
+            )}
+            <Button type="submit" className="w-full text-md" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing up...
+                </>
+              ) : (
+                "Signup"
+              )}
+            </Button>
           </form>
+          <div className="mt-4 text-center text-md">
+            Already have an account?{" "}
+            <button
+              className="underline"
+              onClick={() => router.push("/auth/login")}
+            >
+              Login
+            </button>
+          </div>
         </CardContent>
       </Card>
     </div>

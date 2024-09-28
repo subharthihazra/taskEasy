@@ -1,14 +1,18 @@
 "use client";
 
+import Header from "@/components/Header";
 import KanbanBoard from "../../../components/KanbanBoard";
 
 const KanbanPage = () => {
   return (
-    <div>
-      <main>
-        <KanbanBoard />
-      </main>
-    </div>
+    <>
+      <Header curpage="kanban" />
+      <div>
+        <main>
+          <KanbanBoard />
+        </main>
+      </div>
+    </>
   );
 };
 
