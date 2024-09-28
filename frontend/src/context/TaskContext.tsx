@@ -46,7 +46,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const addTask = async (task: Task) => {
-    task.pos = tasks[task.status].data.length + 1;
+    task.pos = tasks[task.status].data.length;
     const createdTask = await taskService.createTask(task);
     setTasks((prev) => ({
       ...prev,
@@ -68,9 +68,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const cur = { ...prev };
 
       cur[sourceColumn].data.splice(sourceIndex, 1);
-      cur[sourceColumn].data = cur[sourceColumn].data.map((item: any, i) =>
-        i >= sourceIndex ? { ...item, pos: item.pos - 1 } : item
-      );
+      cur[sourceColumn].data = cur[sourceColumn].data.map((item: any, i) => ({
+        ...item,
+        pos: i,
+      }));
 
       cur[destColumn].data = cur[destColumn].data.map((item: any, i) =>
         i >= destIndex ? { ...item, pos: item.pos + 1 } : item
@@ -99,10 +100,26 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
     setTasks((prev) => {
       const cur = { ...prev };
 
-      
-    //   cur[task.status].data = cur[task.status].data.map((item) =>
-    //     item.tid !== task.tid ? item : { ...item, ...task, pos:item.status === task.status ? pos: prev[] }
-    //   );
+      let curTask: any;
+      Object.keys(tasks).forEach((column) => {
+        const tmp: any = tasks[column].data
+          .filter((item) => item.tid === task.tid)
+          .at(0);
+        if (tmp) curTask = tmp;
+      });
+      if (curTask && curTask.status !== task.status) {
+        cur[curTask.status].data = cur[curTask.status].data
+          .filter((item) => item.tid !== task.tid)
+          .map((item, i) => ({ ...item, pos: i }));
+        cur[task.status].data.push({
+          ...task,
+          pos: cur[task.status].data.length,
+        });
+      }
+
+      cur[task.status].data = cur[task.status].data.map((item) =>
+        item.tid !== task.tid ? item : { ...item, ...task }
+      );
 
       return cur;
     });

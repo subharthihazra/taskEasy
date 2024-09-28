@@ -19,73 +19,75 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Trash, Edit } from "lucide-react";
-
-interface Task {
-  id: string;
-  title: string;
-  status: string;
-}
-
-const initialTasks: Task[] = [
-  { id: "1", title: "Task 1", status: "To Do" },
-  { id: "2", title: "Task 2", status: "In Progress" },
-  { id: "3", title: "Task 3", status: "Completed" },
-];
+import { useTaskContext } from "@/context/TaskContext";
 
 const TaskList = () => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const { tasks, addTask, updateATask, deleteTask } = useTaskContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [title, setTitle] = useState("");
-  const [status, setStatus] = useState("To Do");
+  const [status, setStatus] = useState("to-do");
   const [filterStatus, setFilterStatus] = useState("");
+  const [editMode, setEditMode] = useState(false);
+  const [editTaskId, setEditTaskId] = useState(null);
 
   // Handle Task Creation or Update
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentTask) {
+    if (editMode && editTaskId) {
       // Edit Task
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === currentTask.id ? { ...task, title, status } : task
-        )
-      );
+      updateATask({
+        title,
+        status,
+        tid: editTaskId,
+        pos:
+          tasks[status].data.filter((x) => x.tid === editTaskId).length === 0
+            ? tasks[status].data.length
+            : tasks[status].data.filter((x) => x.tid === editTaskId).at(0)?.pos,
+      });
     } else {
       // Add New Task
-      const newTask = { id: Date.now().toString(), title, status };
-      setTasks((prev) => [...prev, newTask]);
+      const newTask: any = {
+        tid: Date.now().toString(),
+        title,
+        status,
+        pos: tasks[status].data.length + 1,
+      }; // Add user ID if needed
+      await addTask(newTask);
     }
     resetDialog();
   };
 
   // Handle Task Deletion
-  const handleDelete = (taskId: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+  const handleDelete = (tid: string) => {
+    deleteTask(tid);
   };
 
   // Open the Dialog for Editing a Task
-  const openEditDialog = (task: Task) => {
-    setCurrentTask(task);
+  const openEditDialog = (task: any) => {
     setTitle(task.title);
     setStatus(task.status);
     setIsDialogOpen(true);
+    setEditMode(true);
+    setEditTaskId(task.tid);
   };
 
   // Reset the Dialog State
   const resetDialog = () => {
     setIsDialogOpen(false);
-    setCurrentTask(null);
     setTitle("");
-    setStatus("To Do");
+    setEditMode(false);
+    setEditTaskId(null);
   };
 
   // Filter Tasks Based on Status
   const filteredTasks = filterStatus
-    ? tasks.filter((task) => task.status === filterStatus)
-    : tasks;
+    ? tasks[filterStatus].data
+    : Object.keys(tasks)
+        .map((column) => tasks[column].data)
+        .flat(1);
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-4 mt-[70px] flex flex-col gap-4 sm:max-w-[800px] mx-auto">
       {/* Task Filtering */}
       <div className="flex justify-between">
         <h1 className="text-2xl font-semibold">Tasks</h1>
@@ -101,9 +103,9 @@ const TaskList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All</SelectItem>
-              <SelectItem value="To Do">To Do</SelectItem>
-              <SelectItem value="In Progress">In Progress</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
+              <SelectItem value="to-do">To Do</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -114,12 +116,12 @@ const TaskList = () => {
         {filteredTasks.length > 0 ? (
           filteredTasks.map((task) => (
             <div
-              key={task.id}
+              key={task.tid}
               className="flex justify-between items-center p-3 border border-slate-300 rounded"
             >
               <div>
                 <h2 className="font-medium">{task.title}</h2>
-                <p className="text-sm text-gray-600">{task.status}</p>
+                <p className="text-sm text-gray-600">{tasks[task.status].name}</p>
               </div>
               <div className="space-x-2">
                 <Button
@@ -131,7 +133,7 @@ const TaskList = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => handleDelete(task.id)}
+                  onClick={() => handleDelete(task.tid)}
                   className="px-2"
                 >
                   <Trash className="h-4 w-4 text-red-500" />
@@ -148,17 +150,13 @@ const TaskList = () => {
       <div className="text-right">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              Add Task
-            </Button>
+            <Button onClick={() => setIsDialogOpen(true)}>Add Task</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
-                {currentTask ? "Edit Task" : "Add Task"}
-              </DialogTitle>
+              <DialogTitle>{editMode ? "Edit Task" : "Add Task"}</DialogTitle>
               <DialogDescription>
-                {currentTask
+                {editMode
                   ? "Update the task details below."
                   : "Please enter the details of the new task."}
               </DialogDescription>
@@ -176,9 +174,9 @@ const TaskList = () => {
                   <SelectValue placeholder="Select Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="To Do">To Do</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="to-do">To Do</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
                 </SelectContent>
               </Select>
               <div className="flex justify-end space-x-2">

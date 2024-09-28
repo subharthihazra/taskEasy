@@ -96,7 +96,7 @@ const KanbanBoard = () => {
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className="flex flex-col w-full sm:w-1/3 bg-slate-50 border border-slate-300 py-4 px-6 rounded box-border h-fit sm:min-w-[250px]"
+                  className="flex flex-col w-full sm:w-1/3 bg-slate-50 border border-slate-300 py-4 px-6 rounded box-border h-fit sm:min-w-[250px] sm:max-w-[600px]"
                 >
                   <h2 className="text-lg font-semibold mb-2">
                     {tasks[column].name}
@@ -151,7 +151,7 @@ const KanbanBoard = () => {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Add New Task</DialogTitle>
+                        <DialogTitle>{editMode ? "Update the Task" : "Add New Task"}</DialogTitle>
                         <DialogDescription>
                           Please enter the task details below.
                         </DialogDescription>
@@ -167,28 +167,31 @@ const KanbanBoard = () => {
                           onChange={(e) => setTitle(e.target.value)}
                           required
                         />
-                        <Select value={status} onValueChange={setStatus}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="to-do">To Do</SelectItem>
-                            <SelectItem value="in-progress">
-                              In Progress
-                            </SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <div className="mt-4 flex justify-end">
-                          <Button type="submit">
-                            {editMode ? "Update Task" : "Add Task"}
-                          </Button>
+                        {!editMode && (
+                          <Select value={status} onValueChange={setStatus}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="to-do">To Do</SelectItem>
+                              <SelectItem value="in-progress">
+                                In Progress
+                              </SelectItem>
+                              <SelectItem value="completed">
+                                Completed
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                        <div className="mt-4 flex justify-end gap-2">
                           <Button
                             variant="outline"
                             onClick={() => setIsOpen(false)}
-                            className="ml-2"
                           >
                             Cancel
+                          </Button>
+                          <Button type="submit">
+                            {editMode ? "Update Task" : "Add Task"}
                           </Button>
                         </div>
                       </form>
