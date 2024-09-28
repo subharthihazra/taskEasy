@@ -10,20 +10,20 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useLayoutEffect(() => {
+    if (loading != "loading" && !user) {
+      router.push("/auth/login"); // Redirect to login if not authenticated
+    }
+  }, [user, router, loading]);
+
+  useLayoutEffect(() => {
     const checkAuth = async () => {
       if (!user) {
         await refresh(); // Attempt to refresh token and get user
       }
     };
 
-    loading != "loading" && checkAuth();
+    if (loading !== "loading") checkAuth();
   }, [user, refresh, loading]);
-
-  useLayoutEffect(() => {
-    if (loading != "loading" && !user) {
-      router.push("/auth/login"); // Redirect to login if not authenticated
-    }
-  }, [user, router, loading]);
 
   return (
     <TaskProvider>

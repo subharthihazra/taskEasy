@@ -38,13 +38,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   useLayoutEffect(() => {
     async function isAuth() {
-      const response = await apiClient.post(
-        `/isauth`,
-        {},
-        { withCredentials: true }
-      );
-      setUser(response.data.data);
-      setLoading("idle");
+      try {
+        const response = await apiClient.post(
+          `/isauth`,
+          {},
+          { withCredentials: true }
+        );
+        setUser(response.data.data);
+      } catch (error: any) {
+        setUser(null);
+      } finally {
+        setLoading("idle");
+      }
     }
     isAuth();
   }, []);

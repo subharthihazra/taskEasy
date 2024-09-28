@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -18,13 +18,21 @@ import { useAuth } from "../../../context/AuthContext";
 import { useRouter } from "next/navigation";
 
 const SignupPage = () => {
-  const { signup } = useAuth();
+  const { signup, user, loading:golbalLoading } = useAuth();
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+
+  useLayoutEffect(() => {
+    if (golbalLoading != "loading" && user) {
+      router.push("/dashboard/kanban"); // Redirect to login if not authenticated
+    }
+  }, [user, router, golbalLoading]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -19,7 +19,7 @@ import { Alert } from "@/components/ui/alert";
 import { useAuth } from "../../../context/AuthContext";
 
 function LoginPage() {
-  const { login } = useAuth();
+  const { login, user, loading:golbalLoading } = useAuth();
   const [curstate, setCurstate] = useState<string>("idle");
   const [errormsg, setErrormsg] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
@@ -27,6 +27,12 @@ function LoginPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const redirectUrl: string = "/dashboard/kanban";
+
+  useLayoutEffect(() => {
+    if (golbalLoading != "loading" && user) {
+      router.push(redirectUrl); // Redirect to login if  authenticated
+    }
+  }, [user, router, golbalLoading]);
 
   useEffect(() => {
     if (curstate === "success") {
