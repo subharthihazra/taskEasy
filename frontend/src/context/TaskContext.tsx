@@ -5,8 +5,9 @@ import * as taskService from "../lib/taskServices"; // Adjusted import to match 
 interface TaskContextType {
   tasks: Record<string, { name: string; data: Task[] }>;
   addTask: (task: Task) => Promise<void>;
-  updateTask: (taskId: string, updatedData: any) => Promise<void>;
-  deleteTask: (taskId: string, column: string) => Promise<void>;
+  updateATask: (task: any) => Promise<void>;
+  updateTasks: (info: any) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -56,7 +57,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
   };
 
-  const updateTask = async ({
+  const updateTasks = async ({
     sourceColumn,
     sourceIndex,
     destColumn,
@@ -91,30 +92,39 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       updatingTask = [...tasks[sourceColumn].data];
     }
 
-    const updatedTask = await taskService.updateTask(updatingTask);
-    // setTasks((prev) => {
-    //   const updatedColumn = updatedTask.status;
-    //   const cur = { ...prev };
-    //   cur[updatedColumn].data = cur[updatedColumn].data.map((task: any) =>
-    //     task.tid === updatedTask.tid ? updatedTask : task
-    //   );
-    //   return cur;
-    // });
+    await taskService.updateTask(updatingTask);
   };
 
-  const deleteTask = async (taskId: string, column: string) => {
-    await taskService.deleteTask(taskId);
-    setTasks((prev) => ({
-      ...prev,
-      [column]: {
-        name: prev[column].name,
-        data: prev[column].data.filter((task) => task.tid !== taskId),
-      },
-    }));
+  const updateATask = async (task: any) => {
+    setTasks((prev) => {
+      const cur = { ...prev };
+
+      
+    //   cur[task.status].data = cur[task.status].data.map((item) =>
+    //     item.tid !== task.tid ? item : { ...item, ...task, pos:item.status === task.status ? pos: prev[] }
+    //   );
+
+      return cur;
+    });
+
+    await taskService.updateTask([task]);
+  };
+
+  const deleteTask = async (tid: string) => {
+    setTasks((prev) => {
+      const cur = { ...prev };
+      Object.keys(cur).forEach((column: any) => {
+        cur[column].data = cur[column].data.filter((item) => item.tid !== tid);
+      });
+      return cur;
+    });
+    await taskService.deleteTask(tid);
   };
 
   return (
-    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask }}>
+    <TaskContext.Provider
+      value={{ tasks, addTask, updateTasks, deleteTask, updateATask }}
+    >
       {children}
     </TaskContext.Provider>
   );

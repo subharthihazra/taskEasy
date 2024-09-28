@@ -8,7 +8,7 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { Button } from "@/components/ui/button";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, Trash, Edit2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,10 +28,13 @@ import { Input } from "@/components/ui/input"; // Assuming you have an Input com
 import { useTaskContext } from "../context/TaskContext"; // Import the task context
 
 const KanbanBoard = () => {
-  const { tasks, addTask, updateTask } = useTaskContext(); // Access tasks and context functions
+  const { tasks, addTask, updateTasks, updateATask, deleteTask } =
+    useTaskContext(); // Access tasks and context functions
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("to-do");
+  const [editMode, setEditMode] = useState(false);
+  const [editTaskId, setEditTaskId] = useState(null);
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -43,35 +46,57 @@ const KanbanBoard = () => {
 
     // console.log(result);
 
-    updateTask({ sourceColumn, sourceIndex, destColumn, destIndex });
+    updateTasks({ sourceColumn, sourceIndex, destColumn, destIndex });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim()) {
-      const newTask: any = { tid: Date.now().toString(), title, status }; // Add user ID if needed
-      await addTask(newTask); // Use context function to add task
+      if (editMode && editTaskId) {
+        updateATask({ title, status, tid: editTaskId });
+      } else {
+        const newTask: any = { tid: Date.now().toString(), title, status }; // Add user ID if needed
+        await addTask(newTask); // Use context function to add task
+      }
       setTitle("");
+      setEditTaskId(null);
+      setEditMode(false);
       setIsOpen(false);
     }
   };
 
-  const openDialog = (column: string) => {
-    setStatus(column); // Set the status to the current column
-    setIsOpen(true); // Open the dialog
+  const openDialog = (column: string, task: any = null) => {
+    if (task) {
+      // If editing, populate the form with task details
+      setTitle(task.title);
+      setStatus(task.status);
+      setEditTaskId(task.tid);
+      setEditMode(true);
+    } else {
+      // Otherwise, open dialog for adding a new task
+      setTitle("");
+      setStatus(column);
+      setEditTaskId(null);
+      setEditMode(false);
+    }
+    setIsOpen(true);
+  };
+
+  const handleDelete = async (taskId: string) => {
+    deleteTask(taskId); // Use context function to delete task
   };
 
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex flex-col md:flex-row p-4 justify-center gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 overflow-auto min-h-screen pt-[87px] px-4 pb-4">
           {Object.keys(tasks).map((column) => (
             <Droppable key={column} droppableId={column}>
               {(provided) => (
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className="flex flex-col w-full md:w-1/3 bg-slate-50 border border-slate-300 p-4 rounded box-border h-fit"
+                  className="flex flex-col w-full sm:w-1/3 bg-slate-50 border border-slate-300 py-4 px-6 rounded box-border h-fit sm:min-w-[250px]"
                 >
                   <h2 className="text-lg font-semibold mb-2">
                     {tasks[column].name}
@@ -87,8 +112,28 @@ const KanbanBoard = () => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="p-2 mb-2 bg-white rounded shadow border border-slate-300"
+                          className="py-3 px-6 mb-2 bg-white rounded shadow border border-slate-300 relative"
                         >
+                          <div className="flex flex-col gap-2 w-8 absolute left-0 top-1/2 translate-y-[-50%] translate-x-[-50%]">
+                            {/* Edit Button */}
+                            <Button
+                              variant="outline"
+                              onClick={() => openDialog(column, task)}
+                              className="text-blue-500 hover:text-blue-700 px-2 h-8 rounded-full shadow"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="flex flex-col gap-2 w-8 absolute right-0 top-1/2 translate-y-[-50%] translate-x-[50%]">
+                            {/* Delete Button */}
+                            <Button
+                              variant="outline"
+                              onClick={() => handleDelete(task.tid)}
+                              className="text-red-500 hover:text-red-700 px-2 h-8 rounded-full shadow"
+                            >
+                              <Trash className="w-4 h-4" />
+                            </Button>
+                          </div>
                           {task.title}
                         </div>
                       )}
@@ -135,7 +180,9 @@ const KanbanBoard = () => {
                           </SelectContent>
                         </Select>
                         <div className="mt-4 flex justify-end">
-                          <Button type="submit">Add Task</Button>
+                          <Button type="submit">
+                            {editMode ? "Update Task" : "Add Task"}
+                          </Button>
                           <Button
                             variant="outline"
                             onClick={() => setIsOpen(false)}

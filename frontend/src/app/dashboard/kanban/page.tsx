@@ -5,7 +5,7 @@ import KanbanBoard from "../../../components/KanbanBoard";
 const KanbanPage = () => {
   return (
     <div>
-      <main className="p-4">
+      <main>
         <KanbanBoard />
       </main>
     </div>

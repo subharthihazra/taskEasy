@@ -33,7 +33,7 @@ export const updateTask = async (tasks: any): Promise<any> => {
 // Delete a task by ID
 export const deleteTask = async (taskId: any): Promise<any> => {
   try {
-    const response = await authApiClient.delete(`/tasks/${taskId}`);
+    const response = await authApiClient.post(`/tasks/${taskId}`, {});
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Error deleting task");
