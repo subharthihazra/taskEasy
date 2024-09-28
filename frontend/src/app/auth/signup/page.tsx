@@ -29,6 +29,7 @@ const SignupPage = () => {
 
   useLayoutEffect(() => {
     if (golbalLoading != "loading" && user) {
+      
       router.push("/dashboard/kanban"); // Redirect to login if not authenticated
     }
   }, [user, router, golbalLoading]);
